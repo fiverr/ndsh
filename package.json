@@ -1,0 +1,31 @@
+{
+  "name": "ndsh",
+  "version": "1.0.0",
+  "author": "Fiverr SRE",
+  "description": "NPX runner for shell scripts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fiverr/ndsh.git"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=6.9.4"
+  },
+  "bin": {
+    "index": "./index.js"
+  },
+  "publishConfig": {
+    "tag": "next",
+    "tag-version-prefix": ""
+  },
+  "scripts": {
+    "chmod": "chmod 777 scripts/*",
+    "prepublishOnly": "npm run chmod",
+    "start": "./index.js $@"
+  },
+  "main": "./index.js",
+  "dependencies": {
+    "colors": "^1.1.2",
+    "commander": "^2.11.0"
+  }
+}
