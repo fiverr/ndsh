@@ -7,6 +7,12 @@ npx ndsh <SCRIPT> [arguments...]
 ```
 
 ## Available scripts
+### has-prefix
+```
+npx ndsh has-prefix <PREFIX>
+```
+Checks the package name starts with the given argument. Useful for org owned modules (`npx ndsh has-prefix @my-org/`).
+
 ### Info
 ```
 npx ndsh info
