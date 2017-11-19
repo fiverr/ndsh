@@ -32,7 +32,7 @@ fi
 # Find out if the current version is already published #
 # #################################################### #
 published=$(npm view ${name}@${version} version)
-released=$(npm view ${name}@${branchname} version)
+released=$(npm view ${name}@${tag} version)
 
 [ "$testing" = "testing" ] && echo -e "Testing mode.\nEchoing the actions instead of performing them:\n"
 
