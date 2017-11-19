@@ -42,3 +42,5 @@ Create a Git tag, by the package version, with a message by the latest commit me
 npx ndsh verify <USERNAME>
 ```
 Verify against NPM that the logged in user is the one specified by the argument. Exits (1) on mismatch
+
+[![bitHound Overall Score](https://www.bithound.io/github/fiverr/ndsh/badges/score.svg)](https://www.bithound.io/github/fiverr/ndsh)

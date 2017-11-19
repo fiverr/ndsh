@@ -14,6 +14,8 @@ ls(`${__dirname}/scripts`)
         process.exit(exitCode);
     })
     .catch(error => {
-        error && console.error(error);
+        if (error) {
+            console.error(error);
+        }
         process.exit(1);
     });
