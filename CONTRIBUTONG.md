@@ -1,3 +1,8 @@
+## Run locally
+```
+./index.js <PROGRAM_NAME> <AGR1> <ARG2>
+```
+
 ## Adding scripts
 Scripts added to `scripts` directory will be automatically added to the program
 
