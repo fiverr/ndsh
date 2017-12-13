@@ -1,6 +1,6 @@
 ## Run locally
 ```
-./index.js <PROGRAM_NAME> <AGR1> <ARG2>
+./index.js <PROGRAM_NAME> <ARG1> <ARG2>
 ```
 
 ## Adding scripts
@@ -9,11 +9,11 @@ Scripts added to `scripts` directory will be automatically added to the program
 Execution arguments following the program name are passed through to the relevant program:
 
 ```
-npx ndsh <PROGRAM_NAME> <AGR1> <ARG2>
+npx ndsh <PROGRAM_NAME> <ARG1> <ARG2>
 ```
 resembles
 ```
-./scripts/<PROGRAM_NAME>.sh <AGR1> <ARG2>
+./scripts/<PROGRAM_NAME>.sh <ARG1> <ARG2>
 ```
 
 
