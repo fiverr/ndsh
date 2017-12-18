@@ -39,13 +39,16 @@ module.exports = (testing = '') => new Promise((resolve, reject) => {
                 tag = branch;
             }
 
+            const npmExists = require('../lib/npm-exists');
+            const exists = await npmExists.call(instance, name);
+
             const npmViewVersion = require('../lib/npm-view-version');
-            const published = await npmViewVersion.call(instance, `${name}@${version}`) === version;
-            const released = await npmViewVersion.call(instance, `${name}@${tag}`) === version;
+            const published = exists && await npmViewVersion.call(instance, `${name}@${version}`) === version;
+            const released = exists && await npmViewVersion.call(instance, `${name}@${tag}`) === version;
 
             // Version not published yet - let's publish it
             if (!published) {
-                const message = `Publish version ${version.underline} to tag ${tag.underline}`;
+                const message = `${exists ? '' : `${name} package doesn't exist yet. `}Publish version ${version.underline} to tag ${tag.underline}`;
 
                 if (isTest) {
                     resolve(message);
