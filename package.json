@@ -1,6 +1,6 @@
 {
   "name": "ndsh",
-  "version": "1.2.0",
+  "version": "1.2.1-rc.0",
   "author": "Fiverr SRE",
   "description": "NPX runner for shell scripts",
   "repository": {
