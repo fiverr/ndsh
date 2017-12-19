@@ -1,5 +1,11 @@
 require('colors');
 
+const RELEASE_CANDIDATES = [
+    'rc',
+    'releasecandidate',
+    'release-candidate',
+];
+
 module.exports = (testing = '') => new Promise((resolve, reject) => {
     const npm = require('npm');
     const isTest = testing.toLowerCase() === 'testing';
@@ -36,6 +42,11 @@ module.exports = (testing = '') => new Promise((resolve, reject) => {
 
                 tag = 'latest';
             } else {
+                if (!RELEASE_CANDIDATES.includes(preReleaseTag(version).toLowerCase())) {
+                    resolve(`${version.underline} is not declared as a release candidate ("rc" in version's pre release part, e.g. 1.2.0-rc.1). ${'Not publishing'.underline}.`);
+                    return;
+                }
+
                 tag = branch;
             }
 
@@ -106,4 +117,9 @@ async function setTag(tag) {
 // Semver has no a pre-release tag
 function cleanSemver(version) {
     return /^\d{1,}.\d{1,}.\d{1,}$/.test(version);
+}
+
+// Get the pre release tag from the complete version
+function preReleaseTag(version) {
+    return version.replace(/^\d{1,}.\d{1,}.\d{1,}-?/, '');
 }
