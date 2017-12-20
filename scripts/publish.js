@@ -1,10 +1,22 @@
 require('colors');
+const webhookNotifier = require('../lib/webhook-notifier');
+const {
+    cleanSemver,
+    extractPreReleaseTag,
+    branch,
+    author,
+    gitRepoInfo,
+} = require('../lib/env-getters');
 
 const RELEASE_CANDIDATES = [
     'rc',
     'releasecandidate',
     'release-candidate',
 ];
+
+const COLOR_OKAY = '#27ae60'; // Nephritis
+const COLOR_NEUTRAL = '#7f8c8d'; // Asbestos
+const COLOR_ERROR = '#c0392b'; // Pomegranate
 
 module.exports = (testing = '') => new Promise((resolve, reject) => {
     const npm = require('npm');
@@ -26,28 +38,36 @@ module.exports = (testing = '') => new Promise((resolve, reject) => {
                 name,
             } = await require('package-data')();
 
-            const {
-                branch,
-                author,
-                commitMessage,
-            } = require('git-repo-info')();
+            const title = (() => {
+                if (name) {
+                    return `${name} package`;
+                }
+
+                if (process.env.CIRCLE_PROJECT_REPONAME) {
+                    return `${process.env.CIRCLE_PROJECT_REPONAME} project`;
+                }
+
+                return 'Unknown process';
+            })();
 
             let tag;
 
             // master branch pushes "latest", others push as branch name
-            if (branch === 'master') {
+            if (branch() === 'master') {
                 if (!cleanSemver(version)) {
                     throw new Error(`Publishing a \"latest\" version is not allowed using a pre-release suffix.\nRemove the pre-release from ${version.underline}.`.red.bold);
                 }
 
                 tag = 'latest';
             } else {
-                if (!RELEASE_CANDIDATES.includes(preReleaseTag(version).toLowerCase())) {
+                const preReleaseTag = extractPreReleaseTag(version);
+
+                if (preReleaseTag && !RELEASE_CANDIDATES.some(term => preReleaseTag.toLowerCase().includes(term))) {
                     resolve(`${version.underline} is not declared as a release candidate ("rc" in version's pre release part, e.g. 1.2.0-rc.1). ${'Not publishing'.underline}.`);
                     return;
                 }
 
-                tag = branch;
+                tag = branch().replace(/[^\w-_]/g, '-');
             }
 
             const npmExists = require('../lib/npm-exists');
@@ -70,14 +90,15 @@ module.exports = (testing = '') => new Promise((resolve, reject) => {
 
                 await setTag(tag);
                 await npmPublish.call(instance, tag);
-                resolve(message);
+                await webhook(message, {title, color: COLOR_OKAY});
                 await setTag('next');
+                resolve(message);
                 return;
             }
 
             // Version published but tag isn't pointing to it - get pointing!
             if (!released) {
-                const message = `Set tag ${tag.underline} to version ${version.underline}`;
+                const message = `Set tag ${tag.underline} to version ${version.underline}.`;
 
                 if (isTest) {
                     resolve(message);
@@ -87,21 +108,41 @@ module.exports = (testing = '') => new Promise((resolve, reject) => {
                 const npmSetTag = require('../lib/npm-set-tag');
 
                 await npmSetTag.call(instance, `${name}@${version}`, tag);
+                await webhook(message, {title, color: COLOR_NEUTRAL});
                 resolve(message);
                 return;
             }
 
             // Version published, Tag's already pointing to it. Nothing to do but sit back and sip on Margaritas
             const message = `Do nothing. Tag ${tag.underline} is already set to version ${version.underline}`;
-
             resolve(message);
             return;
 
         } catch (error) {
+            await webhook(`Error in publishing flow: ${error}`, {title, color: COLOR_ERROR});
             reject(error);
         }
     });
 });
+
+function webhook(message, {channel = '#publish', color = '#9b59b6', title = ''} = {}) {
+    return webhookNotifier(
+        {
+            attachments: [
+                {
+                    fallback: `${title}: package was automatically published`,
+                    color,
+                    author_name: `Automated operation triggered by ${author()}`,
+                    title,
+                    text: message.replace(/\x1B[[(?);]{0,2}(;?\d)*./g, ''),
+                    username: 'Publishbot',
+                    icon_emoji: ':npm:',
+                }
+            ],
+            channel,
+        }
+    )
+}
 
 async function setTag(tag) {
     const editPackage = require('edit-package');
@@ -112,14 +153,4 @@ async function setTag(tag) {
             'tag-version-prefix': '',
         }
     })
-}
-
-// Semver has no a pre-release tag
-function cleanSemver(version) {
-    return /^\d{1,}.\d{1,}.\d{1,}$/.test(version);
-}
-
-// Get the pre release tag from the complete version
-function preReleaseTag(version) {
-    return version.replace(/^\d{1,}.\d{1,}.\d{1,}-?/, '');
 }
