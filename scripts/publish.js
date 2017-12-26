@@ -1,4 +1,6 @@
 require('colors');
+const interpolate = require('@fiverr/futile/lib/interpolator')(/\${([^{}]*)}/gm);
+
 const webhookNotifier = require('../lib/webhook-notifier');
 const {
     cleanSemver,
@@ -17,6 +19,19 @@ const RELEASE_CANDIDATES = [
 const COLOR_OKAY = '#27ae60'; // Nephritis
 const COLOR_NEUTRAL = '#7f8c8d'; // Asbestos
 const COLOR_ERROR = '#c0392b'; // Pomegranate
+
+const convertKeys = (data, convert = (thing) => thing) => Object.keys(data).reduce((collector, key) => {
+    collector[key] = convert(data[key]);
+
+    return collector;
+}, {});
+
+const messageBuilder = (msg, data) => ({
+    plain: interpolate(msg, convertKeys(data)),
+    toString: () => interpolate(msg, convertKeys(data)),
+    console: interpolate(msg, convertKeys(data, (item => item.underline))),
+    md: interpolate(msg, convertKeys(data, (item => `*${item}*`))),
+});
 
 module.exports = (testing = '') => new Promise((resolve, reject) => {
     const npm = require('npm');
@@ -79,10 +94,10 @@ module.exports = (testing = '') => new Promise((resolve, reject) => {
 
             // Version not published yet - let's publish it
             if (!published) {
-                const message = `${exists ? '' : `${name} package doesn't exist yet. `}Publish version ${version.underline} to tag ${tag.underline}`;
+                const message = messageBuilder(`${exists ? '' : `${name} package doesn't exist yet. `}Publish version \${version} to tag \${tag}`, {version, tag});
 
                 if (isTest) {
-                    resolve(message);
+                    resolve(message.console);
                     return;
                 }
 
@@ -90,32 +105,33 @@ module.exports = (testing = '') => new Promise((resolve, reject) => {
 
                 await setTag(tag);
                 await npmPublish.call(instance, tag);
-                await webhook(message, {title, color: COLOR_OKAY});
+                await webhook(message.md, {title, color: COLOR_OKAY});
                 await setTag('next');
-                resolve(message);
+                resolve(message.console);
                 return;
             }
 
             // Version published but tag isn't pointing to it - get pointing!
             if (!released) {
-                const message = `Set tag ${tag.underline} to version ${version.underline}.`;
+                const message = messageBuilder('Set tag ${tag} to version ${version}', {tag, version});
 
                 if (isTest) {
-                    resolve(message);
+                    resolve(message.console);
                     return;
                 }
 
                 const npmSetTag = require('../lib/npm-set-tag');
 
                 await npmSetTag.call(instance, `${name}@${version}`, tag);
-                await webhook(message, {title, color: COLOR_NEUTRAL});
-                resolve(message);
+                await webhook(message.md, {title, color: COLOR_NEUTRAL});
+                resolve(message.console);
                 return;
             }
 
             // Version published, Tag's already pointing to it. Nothing to do but sit back and sip on Margaritas
-            const message = `Do nothing. Tag ${tag.underline} is already set to version ${version.underline}`;
-            resolve(message);
+            const message = messageBuilder('Do nothing. Tag ${tag} is already set to version ${version}', {tag, version});
+
+            resolve(message.console);
             return;
 
         } catch (error) {
@@ -125,21 +141,24 @@ module.exports = (testing = '') => new Promise((resolve, reject) => {
     });
 });
 
-function webhook(message, {channel = '#publish', color = '#9b59b6', title = ''} = {}) {
+function webhook(text, {channel = '#publish', color = '#9b59b6', title = ''} = {}) {
     return webhookNotifier(
         {
             attachments: [
                 {
                     fallback: `${title}: package was automatically published`,
                     color,
-                    author_name: `Automated operation triggered by ${author()}`,
+                    author_name: author(),
                     title,
-                    text: message.replace(/\x1B[[(?);]{0,2}(;?\d)*./g, ''),
-                    username: 'Publishbot',
-                    icon_emoji: ':npm:',
+                    title_link: `https://www.npmjs.com/package/${title}`,
+                    pretext: `Automated operation triggered by *${author()}*`,
+                    text,
+                    mrkdwn_in: ['text', 'pretext'],
                 }
             ],
             channel,
+            username: 'The Publisher',
+            icon_emoji: ':package:',
         }
     )
 }
