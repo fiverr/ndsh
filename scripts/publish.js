@@ -33,6 +33,25 @@ const messageBuilder = (msg, data) => ({
     md: interpolate(msg, convertKeys(data, (item => `*${item}*`))),
 });
 
+const SMILEYS = [
+    ':smiley:',
+    ':grinning:',
+    ':wink:',
+    ':blush:',
+    ':sunglasses:',
+    ':yum:',
+    ':hugging_face:',
+    ':monkey:',
+    ':sunflower:',
+    ':birthday:',
+    ':beers:',
+    ':medal:',
+    ':champagne:',
+    ':confetti_ball:',
+];
+
+const smile = () => SMILEYS[Math.floor(Math.random() * SMILEYS.length)];
+
 module.exports = (testing = '') => new Promise((resolve, reject) => {
     const npm = require('npm');
     const isTest = testing.toLowerCase() === 'testing';
@@ -154,11 +173,32 @@ function webhook(text, {channel = '#publish', color = '#9b59b6', title = ''} = {
                     pretext: `Automated operation triggered by *${author()}*`,
                     text,
                     mrkdwn_in: ['text', 'pretext'],
+                    actions: [
+                        {
+                            type: 'button',
+                            name: 'mortar',
+                            text: ':mortar_board: learn:',
+                        },
+                        {
+                            type: 'button',
+                            name: 'npm_semver',
+                            text: 'Semver in NPM',
+                            url: 'https://docs.npmjs.com/getting-started/semantic-versioning',
+                            style: 'primary',
+                        },
+                        {
+                            type: 'button',
+                            name: 'npm_tags',
+                            text: 'Tags in NPM',
+                            url: 'https://docs.npmjs.com/getting-started/using-tags',
+                            style: 'primary',
+                        }
+                    ]
                 }
             ],
             channel,
             username: 'The Publisher',
-            icon_emoji: ':package:',
+            icon_emoji: smile(),
         }
     )
 }
