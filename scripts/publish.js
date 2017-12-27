@@ -84,6 +84,8 @@ module.exports = (testing = '') => new Promise((resolve, reject) => {
                 return 'Unknown process';
             })();
 
+            const title_link = name ? `https://www.npmjs.com/package/${name}` : undefined;
+
             let tag;
 
             // master branch pushes "latest", others push as branch name
@@ -124,7 +126,7 @@ module.exports = (testing = '') => new Promise((resolve, reject) => {
 
                 await setTag(tag);
                 await npmPublish.call(instance, tag);
-                await webhook(message.md, {title, color: COLOR_OKAY});
+                await webhook(message.md, {title, title_link, color: COLOR_OKAY});
                 await setTag('next');
                 resolve(message.console);
                 return;
@@ -142,7 +144,7 @@ module.exports = (testing = '') => new Promise((resolve, reject) => {
                 const npmSetTag = require('../lib/npm-set-tag');
 
                 await npmSetTag.call(instance, `${name}@${version}`, tag);
-                await webhook(message.md, {title, color: COLOR_NEUTRAL});
+                await webhook(message.md, {title, title_link, color: COLOR_NEUTRAL});
                 resolve(message.console);
                 return;
             }
@@ -160,42 +162,21 @@ module.exports = (testing = '') => new Promise((resolve, reject) => {
     });
 });
 
-function webhook(text, {channel = '#publish', color = '#9b59b6', title = ''} = {}) {
+function webhook(text, {channel = '#publish', color = '#9b59b6', title = '', title_link} = {}) {
+    const attachment = {
+        fallback: `${title}: package was automatically published`,
+        color,
+        author_name: author(),
+        title,
+        title_link,
+        pretext: `Automated operation triggered by *${author()}*`,
+        text,
+        mrkdwn_in: ['text', 'pretext'],
+    };
+
     return webhookNotifier(
         {
-            attachments: [
-                {
-                    fallback: `${title}: package was automatically published`,
-                    color,
-                    author_name: author(),
-                    title,
-                    title_link: `https://www.npmjs.com/package/${title}`,
-                    pretext: `Automated operation triggered by *${author()}*`,
-                    text,
-                    mrkdwn_in: ['text', 'pretext'],
-                    actions: [
-                        {
-                            type: 'button',
-                            name: 'mortar',
-                            text: ':mortar_board: learn:',
-                        },
-                        {
-                            type: 'button',
-                            name: 'npm_semver',
-                            text: 'Semver in NPM',
-                            url: 'https://docs.npmjs.com/getting-started/semantic-versioning',
-                            style: 'primary',
-                        },
-                        {
-                            type: 'button',
-                            name: 'npm_tags',
-                            text: 'Tags in NPM',
-                            url: 'https://docs.npmjs.com/getting-started/using-tags',
-                            style: 'primary',
-                        }
-                    ]
-                }
-            ],
+            attachments: [attachment],
             channel,
             username: 'The Publisher',
             icon_emoji: smile(),
