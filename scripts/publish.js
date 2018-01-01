@@ -7,6 +7,7 @@ const {
     extractPreReleaseTag,
     branch,
     author,
+    sha,
     gitRepoInfo,
 } = require('../lib/env-getters');
 
@@ -66,6 +67,16 @@ module.exports = (testing = '') => new Promise((resolve, reject) => {
             return;
         }
 
+        const packageData = await require('package-data')();
+
+        const {
+            name,
+        } = packageData;
+
+        let {
+            version,
+        } = packageData;
+
         const title = (() => {
             if (name) {
                 return `${name} package`;
@@ -79,11 +90,6 @@ module.exports = (testing = '') => new Promise((resolve, reject) => {
         })();
 
         try {
-            const {
-                version,
-                name,
-            } = await require('package-data')();
-
             const title_link = name ? `https://www.npmjs.com/package/${name}` : undefined;
 
             let tag;
@@ -98,13 +104,15 @@ module.exports = (testing = '') => new Promise((resolve, reject) => {
             } else {
                 const preReleaseTag = extractPreReleaseTag(version);
 
-                if (preReleaseTag && !RELEASE_CANDIDATES.some(term => preReleaseTag.toLowerCase().includes(term))) {
+                if (!RELEASE_CANDIDATES.some(term => preReleaseTag.toLowerCase().includes(term))) {
                     resolve(`${version.underline} is not declared as a release candidate ("rc" in version's pre release part, e.g. 1.2.0-rc.1). ${'Not publishing'.underline}.`);
                     return;
                 }
 
                 tag = branch().replace(/[^\w-_]/g, '-');
             }
+
+            version = tag === 'latest' ? version : `${version}-${sha()}`;
 
             const npmExists = require('../lib/npm-exists');
             const exists = await npmExists.call(instance, name);
@@ -125,9 +133,10 @@ module.exports = (testing = '') => new Promise((resolve, reject) => {
                 const npmPublish = require('../lib/npm-publish');
 
                 await setTag(tag);
+                await setVersion(version);
                 await npmPublish.call(instance, tag);
                 await webhook(message.md, {title, title_link, color: COLOR_OKAY});
-                await setTag('next');
+                resetPackage(packageData);
                 resolve(message.console);
                 return;
             }
@@ -192,5 +201,20 @@ async function setTag(tag) {
             tag,
             'tag-version-prefix': '',
         }
-    })
+    });
 }
+
+async function setVersion(version) {
+    const editPackage = require('edit-package');
+
+    await editPackage({
+        version
+    });
+}
+
+async function resetPackage(packageData) {
+    const editPackage = require('edit-package');
+
+    await editPackage(packageData);
+}
+
