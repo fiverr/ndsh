@@ -8,7 +8,6 @@ const {
     branch,
     author,
     sha,
-    gitRepoInfo,
 } = require('../lib/env-getters');
 
 const RELEASE_CANDIDATES = [
@@ -135,6 +134,7 @@ module.exports = (testing = '') => new Promise((resolve, reject) => {
                 await setTag(tag);
                 await setVersion(version);
                 await npmPublish.call(instance, tag);
+                await require('../lib/git-tag')(version);
                 await webhook(message.md, {title, title_link, color: COLOR_OKAY});
                 resetPackage(packageData);
                 resolve(message.console);
