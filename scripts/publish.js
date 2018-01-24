@@ -66,23 +66,23 @@ module.exports = (testing = '') => new Promise((resolve, reject) => {
             return;
         }
 
-        const title = (() => {
-            if (name) {
-                return `${name} package`;
-            }
-
-            if (process.env.CIRCLE_PROJECT_REPONAME) {
-                return `${process.env.CIRCLE_PROJECT_REPONAME} project`;
-            }
-
-            return 'Unknown process';
-        })();
-
         try {
             const {
                 version,
                 name,
             } = await require('package-data')();
+
+            const title = (() => {
+                if (name) {
+                    return `${name} package`;
+                }
+
+                if (process.env.CIRCLE_PROJECT_REPONAME) {
+                    return `${process.env.CIRCLE_PROJECT_REPONAME} project`;
+                }
+
+                return 'Unknown process';
+            })();
 
             const title_link = name ? `https://www.npmjs.com/package/${name}` : undefined;
 
