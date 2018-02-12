@@ -10,7 +10,7 @@ ls(`${__dirname}/scripts`)
     .then(scripts => program(scripts))
     .then(([script, args]) => execute(`${__dirname}/scripts/${script} ${args.join(' ')}`))
     .then((message, exitCode) => {
-        console.log(message.toString().green.bold);
+        console.log((message || '').toString().green.bold);
         process.exit(exitCode);
     })
     .catch(error => {
