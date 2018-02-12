@@ -1,6 +1,6 @@
 {
   "name": "ndsh",
-  "version": "1.4.0-beta",
+  "version": "1.4.0-rc",
   "author": "Fiverr SRE",
   "description": "NPX runner for shell scripts",
   "repository": {
@@ -28,11 +28,6 @@
     "@fiverr/futile": "^1.10.0",
     "colors": "^1.1.2",
     "commander": "^2.11.0",
-    "edit-package": "^0.2.0",
-    "git-repo-info": "^1.4.1",
-    "git-tag": "^0.2.0",
-    "json-beautify": "^1.0.1",
-    "npm": "^5.5.1",
-    "package-data": "^2.0.0"
+    "published": "^0.1.11"
   }
 }
