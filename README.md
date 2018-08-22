@@ -23,10 +23,7 @@ Prints some info about the Git repo and NPM module (A demonstration script)
 ```
 npx ndsh publish [testing]
 ```
-Publish to NPM by the following logic:
-- Git branch master tagged as "latest"
-- Other branches tagged as the branch name ( `npm i <PACKAGE_NAM>@<BRANCH_NAME>` )
-- Already published version only set the tag by the previous rules
+Deprecated, use [published](https://fiverr.github.io/published/)
 
 Passing 'testing' string will result in an echo of the operation only
 

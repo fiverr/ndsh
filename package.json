@@ -1,6 +1,6 @@
 {
   "name": "ndsh",
-  "version": "1.4.0",
+  "version": "1.5.2",
   "author": "Fiverr SRE",
   "description": "NPX runner for shell scripts",
   "repository": {
@@ -9,14 +9,10 @@
   },
   "license": "MIT",
   "engines": {
-    "node": ">=7.6.0"
+    "node": ">=8.0.0"
   },
   "bin": {
     "ndsh": "./index.js"
-  },
-  "publishConfig": {
-    "tag": "next",
-    "tag-version-prefix": ""
   },
   "scripts": {
     "chmod": "chmod 777 scripts/*",
@@ -25,9 +21,8 @@
   },
   "main": "./index.js",
   "dependencies": {
-    "@fiverr/futile": "^1.10.0",
     "colors": "^1.1.2",
     "commander": "^2.11.0",
-    "published": "^0.1.19"
+    "published": "^1.2.2"
   }
 }
