@@ -4,6 +4,6 @@ module.exports = (testing = '', slack = {}) => new Promise(
             testing: testing.toLowerCase() === 'testing',
             slack: Object.assign({webhook: process.env.SLACK_WEBHOOK}, slack)
         })
-        .then(resolve)
+        .then(({message} = {}) => resolve(message))
         .catch(reject)
     );
