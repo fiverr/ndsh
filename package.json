@@ -1,6 +1,6 @@
 {
   "name": "ndsh",
-  "version": "1.5.4",
+  "version": "1.5.5",
   "author": "Fiverr SRE",
   "description": "NPX runner for shell scripts",
   "repository": {
@@ -21,7 +21,7 @@
   },
   "main": "./index.js",
   "dependencies": {
-    "colors": "^1.1.2",
+    "chalk": "^4.1.2",
     "commander": "^2.11.0",
     "published": "^1.2.2"
   }
